@@ -75,7 +75,7 @@ export function UploadPage() {
         multiple: true,
         filters: [{
           name: 'Text Files',
-          extensions: ['txt', 'md', 'json', 'csv', 'log', 'xml', 'html', 'css', 'js', 'ts', 'tsx', 'jsx', 'py', 'java', 'c', 'cpp', 'h', 'rs']
+          extensions: ['txt', 'md', 'json', 'csv', 'log', 'xml', 'html', 'css', 'js', 'ts', 'tsx', 'jsx', 'py', 'java', 'c', 'cpp', 'h', 'rs', 'pdf']
         }]
       });
 
