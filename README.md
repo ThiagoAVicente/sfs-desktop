@@ -1,5 +1,7 @@
 # Semantic File Search Desktop UI (sfs-desktop-ui)
 
+![Tests](https://github.com/ThiagoAVicente/sfs-desktop/workflows/Tests/badge.svg)
+
 Desktop UI for semantic file search using Tauri + React.
 
 Check [sfs-api](https://github.com/ThiagoAVicente/sfs-api)
