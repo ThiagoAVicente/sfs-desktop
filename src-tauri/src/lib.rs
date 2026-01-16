@@ -17,8 +17,11 @@ struct FetchResponse {
 
 #[tauri::command]
 async fn secure_fetch(url: String, options: FetchOptions) -> Result<FetchResponse, String> {
+    // Only skip cert validation for localhost
+    let is_localhost = url.contains("://localhost") || url.contains("://127.0.0.1");
+
     let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
+        .danger_accept_invalid_certs(is_localhost)
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -54,8 +57,11 @@ async fn secure_upload(
     api_key: String,
     update: bool,
 ) -> Result<FetchResponse, String> {
+    // Only skip cert validation for localhost
+    let is_localhost = url.contains("://localhost") || url.contains("://127.0.0.1");
+
     let client = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
+        .danger_accept_invalid_certs(is_localhost)
         .build()
         .map_err(|e| e.to_string())?;
 
