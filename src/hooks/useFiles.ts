@@ -2,20 +2,35 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
+import type { FileInfoV2 } from '../lib/types';
 
 export function useFiles() {
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<FileInfoV2[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
 
-  const loadFiles = async (prefix?: string) => {
+  const loadFiles = async (options: { collection?: string; page?: number; limit?: number } = {}) => {
     setLoading(true);
     setError('');
     try {
-      const response = await api.listFiles(prefix);
-      setFiles(response.data.files || []);
+      const response = await api.listFiles({
+        collection: options.collection,
+        page: options.page || page,
+        limit: options.limit || 20,
+      });
+      setFiles(response.data.items || []);
+      setPage(response.data.page);
+      setTotalPages(response.data.total_pages);
+      setTotal(response.data.total);
+      setHasNext(response.data.has_next);
+      setHasPrev(response.data.has_prev);
     } catch (err: any) {
       setError(err.message || 'Failed to load files');
     } finally {
@@ -23,11 +38,12 @@ export function useFiles() {
     }
   };
 
-  const deleteFile = async (fileName: string) => {
-    setDeleting(fileName);
+  const deleteFile = async (collection: string, fileName: string) => {
+    const fileKey = `${collection}/${fileName}`;
+    setDeleting(fileKey);
     try {
-      await api.deleteFile(fileName);
-      setFiles((prev) => prev.filter((f) => f !== fileName));
+      await api.deleteFile(collection, fileName);
+      setFiles((prev) => prev.filter((f) => f.path !== fileKey));
     } catch (err: any) {
       throw new Error(err.message || 'Failed to delete file');
     } finally {
@@ -35,10 +51,11 @@ export function useFiles() {
     }
   };
 
-  const downloadFile = async (fileName: string, defaultPath?: string) => {
-    setDownloading(fileName);
+  const downloadFile = async (collection: string, fileName: string, defaultPath?: string) => {
+    const fileKey = `${collection}/${fileName}`;
+    setDownloading(fileKey);
     try {
-      const response = await api.downloadFile(fileName);
+      const response = await api.downloadFile(collection, fileName);
 
       const savePath = await save({
         defaultPath: defaultPath || fileName,
@@ -63,8 +80,21 @@ export function useFiles() {
 
   const filterFiles = (searchQuery: string) => {
     return files.filter((file) =>
-      file.toLowerCase().includes(searchQuery.toLowerCase())
+      file.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      file.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+  };
+
+  const nextPage = () => {
+    if (hasNext) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (hasPrev) {
+      setPage((prev) => prev - 1);
+    }
   };
 
   return {
@@ -73,9 +103,16 @@ export function useFiles() {
     error,
     deleting,
     downloading,
+    page,
+    totalPages,
+    total,
+    hasNext,
+    hasPrev,
     loadFiles,
     deleteFile,
     downloadFile,
     filterFiles,
+    nextPage,
+    prevPage,
   };
 }

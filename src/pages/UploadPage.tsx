@@ -4,7 +4,9 @@ export function UploadPage() {
   const {
     queue,
     updateMode,
+    collection,
     setUpdateMode,
+    setCollection,
     selectFiles,
     clearCompleted,
     clearAll,
@@ -95,6 +97,23 @@ export function UploadPage() {
               </button>
             </>
           )}
+        </div>
+
+        {/* Collection Input */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Collection
+          </label>
+          <input
+            type="text"
+            value={collection}
+            onChange={(e) => setCollection(e.target.value)}
+            placeholder="Enter collection name (e.g., 'default')"
+            className="w-full px-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all"
+          />
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+            Files will be uploaded to this collection
+          </p>
         </div>
 
         <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer mb-6">

@@ -26,10 +26,22 @@ describe('useFiles', () => {
   });
 
   it('should load files successfully', async () => {
-    const mockFiles = ['file1.txt', 'file2.pdf', 'file3.md'];
+    const mockFiles = [
+      { collection: 'default', name: 'file1.txt', path: 'default/file1.txt' },
+      { collection: 'default', name: 'file2.pdf', path: 'default/file2.pdf' },
+      { collection: 'default', name: 'file3.md', path: 'default/file3.md' },
+    ];
 
     vi.mocked(api.listFiles).mockResolvedValue({
-      data: { files: mockFiles, count: 3 },
+      data: { 
+        items: mockFiles, 
+        total: 3,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     const { result } = renderHook(() => useFiles());
@@ -44,23 +56,34 @@ describe('useFiles', () => {
       expect(result.current.error).toBe('');
     });
 
-    expect(api.listFiles).toHaveBeenCalledWith(undefined);
+    expect(api.listFiles).toHaveBeenCalledWith({});
   });
 
-  it('should load files with prefix filter', async () => {
-    const mockFiles = ['docs_file1.txt', 'docs_file2.txt'];
+  it('should load files with collection filter', async () => {
+    const mockFiles = [
+      { collection: 'docs', name: 'file1.txt', path: 'docs/file1.txt' },
+      { collection: 'docs', name: 'file2.txt', path: 'docs/file2.txt' },
+    ];
 
     vi.mocked(api.listFiles).mockResolvedValue({
-      data: { files: mockFiles, count: 2 },
+      data: { 
+        items: mockFiles, 
+        total: 2,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     const { result } = renderHook(() => useFiles());
 
     await act(async () => {
-      await result.current.loadFiles('docs_');
+      await result.current.loadFiles({ collection: 'docs' });
     });
 
-    expect(api.listFiles).toHaveBeenCalledWith('docs_');
+    expect(api.listFiles).toHaveBeenCalledWith({ collection: 'docs', page: 1, limit: 20 });
     expect(result.current.files).toEqual(mockFiles);
   });
 
@@ -100,7 +123,17 @@ describe('useFiles', () => {
     });
 
     act(() => {
-      resolveLoad({ data: { files: [], count: 0 } });
+      resolveLoad({ 
+        data: { 
+          items: [], 
+          total: 0,
+          page: 1,
+          limit: 20,
+          total_pages: 0,
+          has_next: false,
+          has_prev: false,
+        } 
+      });
     });
 
     await waitFor(() => {
@@ -109,8 +142,22 @@ describe('useFiles', () => {
   });
 
   it('should delete file successfully', async () => {
+    const mockFiles = [
+      { collection: 'default', name: 'file1.txt', path: 'default/file1.txt' },
+      { collection: 'default', name: 'file2.txt', path: 'default/file2.txt' },
+      { collection: 'default', name: 'file3.txt', path: 'default/file3.txt' },
+    ];
+
     vi.mocked(api.listFiles).mockResolvedValue({
-      data: { files: ['file1.txt', 'file2.txt', 'file3.txt'], count: 3 },
+      data: { 
+        items: mockFiles, 
+        total: 3,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     vi.mocked(api.deleteFile).mockResolvedValue({
@@ -124,15 +171,15 @@ describe('useFiles', () => {
     });
 
     await act(async () => {
-      await result.current.deleteFile('file2.txt');
+      await result.current.deleteFile('default', 'file2.txt');
     });
 
     await waitFor(() => {
-      expect(result.current.files).toEqual(['file1.txt', 'file3.txt']);
+      expect(result.current.files).toEqual([mockFiles[0], mockFiles[2]]);
       expect(result.current.deleting).toBeNull();
     });
 
-    expect(api.deleteFile).toHaveBeenCalledWith('file2.txt');
+    expect(api.deleteFile).toHaveBeenCalledWith('default', 'file2.txt');
   });
 
   it('should set deleting state during delete', async () => {
@@ -146,11 +193,11 @@ describe('useFiles', () => {
     const { result } = renderHook(() => useFiles());
 
     act(() => {
-      result.current.deleteFile('file.txt');
+      result.current.deleteFile('default', 'file.txt');
     });
 
     await waitFor(() => {
-      expect(result.current.deleting).toBe('file.txt');
+      expect(result.current.deleting).toBe('default/file.txt');
     });
 
     act(() => {
@@ -170,7 +217,7 @@ describe('useFiles', () => {
 
     await expect(async () => {
       await act(async () => {
-        await result.current.deleteFile('file.txt');
+        await result.current.deleteFile('default', 'file.txt');
       });
     }).rejects.toThrow('Delete failed');
 
@@ -192,10 +239,10 @@ describe('useFiles', () => {
     const { result } = renderHook(() => useFiles());
 
     await act(async () => {
-      await result.current.downloadFile('file.txt');
+      await result.current.downloadFile('default', 'file.txt');
     });
 
-    expect(api.downloadFile).toHaveBeenCalledWith('file.txt');
+    expect(api.downloadFile).toHaveBeenCalledWith('default', 'file.txt');
     expect(save).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultPath: 'file.txt',
@@ -219,7 +266,7 @@ describe('useFiles', () => {
     const { result } = renderHook(() => useFiles());
 
     await act(async () => {
-      await result.current.downloadFile('file.txt', '/custom/path/file.txt');
+      await result.current.downloadFile('default', 'file.txt', '/custom/path/file.txt');
     });
 
     expect(save).toHaveBeenCalledWith(
@@ -240,11 +287,11 @@ describe('useFiles', () => {
     const { result } = renderHook(() => useFiles());
 
     act(() => {
-      result.current.downloadFile('file.txt');
+      result.current.downloadFile('default', 'file.txt');
     });
 
     await waitFor(() => {
-      expect(result.current.downloading).toBe('file.txt');
+      expect(result.current.downloading).toBe('default/file.txt');
     });
 
     act(() => {
@@ -276,7 +323,7 @@ describe('useFiles', () => {
     const { result } = renderHook(() => useFiles());
 
     await act(async () => {
-      await result.current.downloadFile('file.txt');
+      await result.current.downloadFile('default', 'file.txt');
     });
 
     expect(writeFile).not.toHaveBeenCalled();
@@ -290,7 +337,7 @@ describe('useFiles', () => {
 
     await expect(async () => {
       await act(async () => {
-        await result.current.downloadFile('file.txt');
+        await result.current.downloadFile('default', 'file.txt');
       });
     }).rejects.toThrow('Download failed');
 
@@ -298,8 +345,22 @@ describe('useFiles', () => {
   });
 
   it('should filter files by search query', async () => {
+    const mockFiles = [
+      { collection: 'default', name: 'test1.txt', path: 'default/test1.txt' },
+      { collection: 'default', name: 'document.pdf', path: 'default/document.pdf' },
+      { collection: 'default', name: 'test2.md', path: 'default/test2.md' },
+    ];
+
     vi.mocked(api.listFiles).mockResolvedValue({
-      data: { files: ['test1.txt', 'document.pdf', 'test2.md'], count: 3 },
+      data: { 
+        items: mockFiles,
+        total: 3,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     const { result } = renderHook(() => useFiles());
@@ -309,12 +370,26 @@ describe('useFiles', () => {
     });
 
     const filtered = result.current.filterFiles('test');
-    expect(filtered).toEqual(['test1.txt', 'test2.md']);
+    expect(filtered).toEqual([mockFiles[0], mockFiles[2]]);
   });
 
   it('should filter files case-insensitively', async () => {
+    const mockFiles = [
+      { collection: 'default', name: 'TEST.txt', path: 'default/TEST.txt' },
+      { collection: 'default', name: 'Document.pdf', path: 'default/Document.pdf' },
+      { collection: 'default', name: 'test.md', path: 'default/test.md' },
+    ];
+
     vi.mocked(api.listFiles).mockResolvedValue({
-      data: { files: ['TEST.txt', 'Document.pdf', 'test.md'], count: 3 },
+      data: { 
+        items: mockFiles,
+        total: 3,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     const { result } = renderHook(() => useFiles());
@@ -324,14 +399,26 @@ describe('useFiles', () => {
     });
 
     const filtered = result.current.filterFiles('test');
-    expect(filtered).toEqual(['TEST.txt', 'test.md']);
+    expect(filtered).toEqual([mockFiles[0], mockFiles[2]]);
   });
 
   it('should return all files when filter is empty', async () => {
-    const allFiles = ['file1.txt', 'file2.pdf', 'file3.md'];
+    const allFiles = [
+      { collection: 'default', name: 'file1.txt', path: 'default/file1.txt' },
+      { collection: 'default', name: 'file2.pdf', path: 'default/file2.pdf' },
+      { collection: 'default', name: 'file3.md', path: 'default/file3.md' },
+    ];
 
     vi.mocked(api.listFiles).mockResolvedValue({
-      data: { files: allFiles, count: 3 },
+      data: { 
+        items: allFiles,
+        total: 3,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     const { result } = renderHook(() => useFiles());

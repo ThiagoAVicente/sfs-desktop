@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { SearchPage } from './pages/SearchPage';
 import { UploadPage } from './pages/UploadPage';
 import { FilesPage } from './pages/FilesPage';
+import { CollectionsPage } from './pages/CollectionsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { useSettingsStore } from './stores/settingsStore';
 import { useTheme } from './hooks/useTheme';
@@ -27,6 +28,7 @@ function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="upload" element={<UploadPage />} />
           <Route path="files" element={<FilesPage />} />
+          <Route path="collections" element={<CollectionsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>

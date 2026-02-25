@@ -1,6 +1,7 @@
 # Semantic File Search Desktop UI (sfs-desktop-ui)
 
 ![Tests](https://github.com/ThiagoAVicente/sfs-desktop/workflows/Tests/badge.svg)
+[![Vibe Coded](https://img.shields.io/badge/Vibe-Coded%20✨-ff69b4?style=for-the-badge)](https://github.com/ThiagoAVicente/sfs-desktop)
 
 Desktop UI for semantic file search using Tauri + React.
 

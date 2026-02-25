@@ -8,10 +8,14 @@ export function SettingsPage() {
   const apiKey = useSettingsStore((state) => state.apiKey);
   const downloadPath = useSettingsStore((state) => state.downloadPath);
   const theme = useSettingsStore((state) => state.theme);
+  const defaultCollection = useSettingsStore((state) => state.defaultCollection);
+  const searchAllCollections = useSettingsStore((state) => state.searchAllCollections);
   const setApiUrl = useSettingsStore((state) => state.setApiUrl);
   const setApiKey = useSettingsStore((state) => state.setApiKey);
   const setDownloadPath = useSettingsStore((state) => state.setDownloadPath);
   const setTheme = useSettingsStore((state) => state.setTheme);
+  const setDefaultCollection = useSettingsStore((state) => state.setDefaultCollection);
+  const setSearchAllCollections = useSettingsStore((state) => state.setSearchAllCollections);
   const saveSettings = useSettingsStore((state) => state.saveSettings);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
 
@@ -179,6 +183,50 @@ export function SettingsPage() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                 Downloaded files will be saved to this location
               </p>
+            </div>
+          </section>
+
+          {/* Collections */}
+          <section>
+            <h2 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-4">
+              Collections
+            </h2>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  Default Collection
+                </label>
+                <input
+                  type="text"
+                  placeholder="default"
+                  value={defaultCollection}
+                  onChange={(e) => setDefaultCollection(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all"
+                />
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+                  Files will be uploaded to this collection by default
+                </p>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={searchAllCollections}
+                    onChange={(e) => setSearchAllCollections(e.target.checked)}
+                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Search all collections by default
+                    </span>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      When enabled, searches will query all collections unless you specify specific ones
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
           </section>
 

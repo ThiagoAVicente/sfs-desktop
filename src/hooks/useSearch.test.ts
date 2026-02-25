@@ -137,10 +137,10 @@ describe('useSearch', () => {
     const { result } = renderHook(() => useSearch());
 
     await act(async () => {
-      await result.current.downloadFile('test/file.txt');
+      await result.current.downloadFile('default', 'test/file.txt');
     });
 
-    expect(api.downloadFile).toHaveBeenCalledWith('test/file.txt');
+    expect(api.downloadFile).toHaveBeenCalledWith('default', 'file.txt');
     expect(save).toHaveBeenCalled();
     expect(writeFile).toHaveBeenCalledWith(
       '/save/path/file.txt',
@@ -162,7 +162,7 @@ describe('useSearch', () => {
     const { result } = renderHook(() => useSearch());
 
     await act(async () => {
-      await result.current.downloadFile('test/file.txt', '/custom/path');
+      await result.current.downloadFile('default', 'test/file.txt', '/custom/path');
     });
 
     expect(save).toHaveBeenCalledWith(
@@ -186,7 +186,7 @@ describe('useSearch', () => {
     const { result } = renderHook(() => useSearch());
 
     await act(async () => {
-      await result.current.downloadFile('test/file.txt');
+      await result.current.downloadFile('default', 'test/file.txt');
     });
 
     expect(writeFile).not.toHaveBeenCalled();
@@ -200,7 +200,7 @@ describe('useSearch', () => {
 
     await expect(async () => {
       await act(async () => {
-        await result.current.downloadFile('test/file.txt');
+        await result.current.downloadFile('default', 'test/file.txt');
       });
     }).rejects.toThrow('Download failed');
   });
@@ -211,11 +211,12 @@ describe('useSearch', () => {
     act(() => {
       result.current.results.push({
         score: 0.95,
+        collection: 'default',
         payload: {
           file_path: 'test.txt',
-          text: 'Sample text',
+          text: 'test content',
           start: 0,
-          end: 100,
+          end: 12,
           chunk_index: 0,
         },
       });
@@ -244,7 +245,7 @@ describe('useSearch', () => {
 
     // Test with forward slash
     await act(async () => {
-      await result.current.downloadFile('test/path/file.txt');
+      await result.current.downloadFile('default', 'test/path/file.txt');
     });
 
     expect(save).toHaveBeenCalledWith(
@@ -255,7 +256,7 @@ describe('useSearch', () => {
 
     // Test with backslash
     await act(async () => {
-      await result.current.downloadFile('test\\path\\file.txt');
+      await result.current.downloadFile('default', 'test\\path\\file.txt');
     });
 
     expect(save).toHaveBeenCalledWith(

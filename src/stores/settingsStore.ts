@@ -8,6 +8,8 @@ interface SettingsStore extends Settings {
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   setSearchLimit: (limit: number) => void;
   setSearchScoreThreshold: (threshold: number) => void;
+  setDefaultCollection: (collection: string) => void;
+  setSearchAllCollections: (searchAll: boolean) => void;
   saveSettings: () => Promise<void>;
   loadSettings: () => Promise<void>;
 }
@@ -21,10 +23,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   setTheme: (theme) => set({ theme }),
   setSearchLimit: (limit) => set({ searchLimit: limit }),
   setSearchScoreThreshold: (threshold) => set({ searchScoreThreshold: threshold }),
+  setDefaultCollection: (collection) => set({ defaultCollection: collection }),
+  setSearchAllCollections: (searchAll) => set({ searchAllCollections: searchAll }),
 
   saveSettings: async () => {
-    const { apiUrl, apiKey, downloadPath, theme, searchLimit, searchScoreThreshold } = get();
-    const settings = { apiUrl, apiKey, downloadPath, theme, searchLimit, searchScoreThreshold };
+    const { apiUrl, apiKey, downloadPath, theme, searchLimit, searchScoreThreshold, defaultCollection, searchAllCollections } = get();
+    const settings = { apiUrl, apiKey, downloadPath, theme, searchLimit, searchScoreThreshold, defaultCollection, searchAllCollections };
 
     const { Store } = await import('@tauri-apps/plugin-store');
     const store = await Store.load('settings.json');

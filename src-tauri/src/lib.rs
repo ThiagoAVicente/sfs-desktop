@@ -54,6 +54,7 @@ async fn secure_upload(
     url: String,
     file_path: String,
     file_name: String,
+    collection: String,
     api_key: String,
     update: bool,
 ) -> Result<FetchResponse, String> {
@@ -80,6 +81,7 @@ async fn secure_upload(
                 .mime_str(&mime_type)
                 .map_err(|e| e.to_string())?
         )
+        .text("collection", collection)
         .text("update", update.to_string());
 
     let response = client
