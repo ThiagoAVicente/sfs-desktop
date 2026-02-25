@@ -56,7 +56,7 @@ describe('useFiles', () => {
       expect(result.current.error).toBe('');
     });
 
-    expect(api.listFiles).toHaveBeenCalledWith({});
+    expect(api.listFiles).toHaveBeenCalledWith({ collection: undefined, page: 1, limit: 20 });
   });
 
   it('should load files with collection filter', async () => {

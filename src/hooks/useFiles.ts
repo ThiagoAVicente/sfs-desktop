@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '../lib/api';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
@@ -16,13 +16,20 @@ export function useFiles() {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
 
+  // Store last load options so pagination buttons can re-use them
+  const lastLoadOptions = useRef<{ collection?: string; limit?: number }>({});
+
   const loadFiles = async (options: { collection?: string; page?: number; limit?: number } = {}) => {
+    // Store non-page options for pagination re-use
+    lastLoadOptions.current = { collection: options.collection, limit: options.limit };
+
     setLoading(true);
     setError('');
+
     try {
       const response = await api.listFiles({
         collection: options.collection,
-        page: options.page || page,
+        page: options.page ?? 1,
         limit: options.limit || 20,
       });
       setFiles(response.data.items || []);
@@ -35,6 +42,18 @@ export function useFiles() {
       setError(err.message || 'Failed to load files');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const nextPage = () => {
+    if (hasNext) {
+      loadFiles({ ...lastLoadOptions.current, page: page + 1 });
+    }
+  };
+
+  const prevPage = () => {
+    if (hasPrev) {
+      loadFiles({ ...lastLoadOptions.current, page: page - 1 });
     }
   };
 
@@ -83,18 +102,6 @@ export function useFiles() {
       file.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
       file.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  };
-
-  const nextPage = () => {
-    if (hasNext) {
-      setPage((prev) => prev + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (hasPrev) {
-      setPage((prev) => prev - 1);
-    }
   };
 
   return {

@@ -85,8 +85,8 @@ describe('useUpload', () => {
 
     await waitFor(() => {
       expect(result.current.queue).toHaveLength(2);
-      expect(result.current.queue[0].fileName).toBe('home_user_test.txt');
-      expect(result.current.queue[1].fileName).toBe('home_user_docs_file.pdf');
+      expect(result.current.queue[0].fileName).toBe('test.txt');
+      expect(result.current.queue[1].fileName).toBe('file.pdf');
     }, { timeout: 3000 });
   });
 
@@ -119,7 +119,8 @@ describe('useUpload', () => {
     await waitFor(() => {
       expect(api.uploadFile).toHaveBeenCalledWith(
         '/test/file.txt',
-        'test_file.txt',
+        'file.txt',
+        'default',
         false
       );
     }, { timeout: 2000 });

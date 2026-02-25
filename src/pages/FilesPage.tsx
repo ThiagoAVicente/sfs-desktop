@@ -26,7 +26,7 @@ export function FilesPage() {
 
   useEffect(() => {
     loadFiles({ collection: collectionFilter || undefined });
-  }, [collectionFilter, page]);
+  }, [collectionFilter]);
 
   const confirmDelete = (collection: string, name: string) => {
     setPendingDelete({ collection, name });

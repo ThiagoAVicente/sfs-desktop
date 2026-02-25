@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearch } from '../hooks/useSearch';
 import { useSettingsStore } from '../stores/settingsStore';
 
@@ -31,8 +31,14 @@ export function SearchPage() {
   const downloadPath = useSettingsStore((state) => state.downloadPath);
   const searchAllCollections = useSettingsStore((state) => state.searchAllCollections);
 
-  // Save settings when limit or threshold changes
+  // Save settings when limit or threshold changes, but skip the initial mount
+  // to avoid overwriting persisted settings before loadSettings() resolves.
+  const isMounted = useRef(false);
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     saveSettings();
   }, [limit, scoreThreshold]);
 

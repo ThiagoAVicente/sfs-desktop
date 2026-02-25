@@ -167,7 +167,11 @@ export const api = {
   }) => {
     const config = getApiConfig();
 
-    const response = await secureFetch(`${config.baseURL}/v2/search`, {
+    const searchUrl = new URL(`${config.baseURL}/v2/search`);
+    searchUrl.searchParams.append('page', String(options.page ?? 1));
+    searchUrl.searchParams.append('limit', String(options.limit ?? 20));
+
+    const response = await secureFetch(searchUrl.toString(), {
       method: 'POST',
       headers: {
         'X-API-Key': config.apiKey,
@@ -176,9 +180,7 @@ export const api = {
       body: JSON.stringify({
         query: options.query,
         collections: options.collections,
-        limit: options.limit || 20,
-        page: options.page || 1,
-        score_threshold: options.scoreThreshold || 0.5,
+        score_threshold: options.scoreThreshold ?? 0.5,
       }),
     });
 

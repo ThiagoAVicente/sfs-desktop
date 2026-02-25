@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '../lib/api';
 import { save } from '@tauri-apps/plugin-dialog';
 import { writeFile } from '@tauri-apps/plugin-fs';
@@ -17,9 +17,10 @@ export function useSearch() {
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   const searchAllCollections = useSettingsStore((state) => state.searchAllCollections);
 
-  const search = async (query: string, limit: number, scoreThreshold: number, pageNum?: number) => {
-    if (!query.trim()) return;
+  // Store last search params so pagination buttons can re-use them
+  const lastSearchParams = useRef<{ query: string; limit: number; scoreThreshold: number } | null>(null);
 
+  const executeSearch = async (query: string, limit: number, scoreThreshold: number, targetPage: number) => {
     setSearching(true);
     setError('');
 
@@ -28,10 +29,10 @@ export function useSearch() {
         query,
         collections: searchAllCollections || selectedCollections.length === 0 ? null : selectedCollections,
         limit,
-        page: pageNum || page,
+        page: targetPage,
         scoreThreshold,
       });
-      
+
       setResults(response.data.items || []);
       setPage(response.data.page);
       setTotalPages(response.data.total_pages);
@@ -42,6 +43,26 @@ export function useSearch() {
       setError(err.message || 'Search failed');
     } finally {
       setSearching(false);
+    }
+  };
+
+  const search = async (query: string, limit: number, scoreThreshold: number) => {
+    if (!query.trim()) return;
+    lastSearchParams.current = { query, limit, scoreThreshold };
+    await executeSearch(query, limit, scoreThreshold, 1);
+  };
+
+  const nextPage = () => {
+    if (hasNext && lastSearchParams.current) {
+      const { query, limit, scoreThreshold } = lastSearchParams.current;
+      executeSearch(query, limit, scoreThreshold, page + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (hasPrev && lastSearchParams.current) {
+      const { query, limit, scoreThreshold } = lastSearchParams.current;
+      executeSearch(query, limit, scoreThreshold, page - 1);
     }
   };
 
@@ -77,18 +98,7 @@ export function useSearch() {
     setTotal(0);
     setHasNext(false);
     setHasPrev(false);
-  };
-
-  const nextPage = () => {
-    if (hasNext) {
-      setPage((prev) => prev + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (hasPrev) {
-      setPage((prev) => prev - 1);
-    }
+    lastSearchParams.current = null;
   };
 
   return {

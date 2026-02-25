@@ -38,7 +38,15 @@ describe('useSearch', () => {
     ];
 
     vi.mocked(api.search).mockResolvedValue({
-      data: { results: mockResults },
+      data: {
+        items: mockResults,
+        total: 1,
+        page: 1,
+        limit: 5,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      },
     } as any);
 
     const { result } = renderHook(() => useSearch());
@@ -53,7 +61,13 @@ describe('useSearch', () => {
       expect(result.current.error).toBe('');
     });
 
-    expect(api.search).toHaveBeenCalledWith('test query', 5, 0.5);
+    expect(api.search).toHaveBeenCalledWith({
+      query: 'test query',
+      collections: null,
+      limit: 5,
+      page: 1,
+      scoreThreshold: 0.5,
+    });
   });
 
   it('should not search with empty query', async () => {
@@ -114,7 +128,7 @@ describe('useSearch', () => {
     });
 
     act(() => {
-      resolveSearch({ data: { results: [] } });
+      resolveSearch({ data: { items: [], total: 0, page: 1, limit: 5, total_pages: 0, has_next: false, has_prev: false } });
     });
 
     await waitFor(() => {
